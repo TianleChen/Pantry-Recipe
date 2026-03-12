@@ -3,9 +3,10 @@
 export const dynamic = 'force-dynamic';
 
 import { useEffect, useState } from 'react';
-import { Trash2, Edit2, Plus } from 'lucide-react';
+import { Trash2, Edit2, Plus, Image as ImageIcon } from 'lucide-react';
 import { useLanguageSafe } from '@/lib/use-language-safe';
 import { t } from '@/lib/translations';
+import ImageExtractor from '@/components/ImageExtractor';
 
 interface Ingredient {
   id: string;
@@ -27,6 +28,7 @@ export default function InventoryPage() {
   const [selectedLocation, setSelectedLocation] = useState('');
   const [sortBy, setSortBy] = useState('name');
   const [showForm, setShowForm] = useState(false);
+  const [showImageExtractor, setShowImageExtractor] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [formData, setFormData] = useState({
     name: '',
@@ -182,28 +184,41 @@ export default function InventoryPage() {
           </select>
         </div>
 
-        <button
-          onClick={() => {
-            setEditingId(null);
-            setFormData({
-              name: '',
-              category: 'vegetables',
-              quantity: '',
-              unit: 'pcs',
-              location: 'fridge',
-              expirationDate: '',
-              notes: '',
-            });
-            setShowForm(!showForm);
-          }}
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
-        >
-          <Plus size={18} />
-          {t(language, 'inventory.addIngredient')}
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={() => {
+              setEditingId(null);
+              setFormData({
+                name: '',
+                category: 'vegetables',
+                quantity: '',
+                unit: 'pcs',
+                location: 'fridge',
+                expirationDate: '',
+                notes: '',
+              });
+              setShowForm(!showForm);
+              setShowImageExtractor(false);
+            }}
+            className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 flex items-center gap-2"
+          >
+            <Plus size={18} />
+            {t(language, 'inventory.addIngredient')}
+          </button>
+          <button
+            onClick={() => {
+              setShowImageExtractor(!showImageExtractor);
+              setShowForm(false);
+            }}
+            className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 flex items-center gap-2"
+          >
+            <ImageIcon size={18} />
+            Add from Image
+          </button>
+        </div>
       </div>
 
-      {/* Add/Edit Form */}
+      {/* Add/Edit Form or Image Extractor */}
       {showForm && (
         <div className="bg-white rounded-lg shadow p-6 space-y-4">
           <h2 className="text-xl font-bold">
@@ -289,6 +304,18 @@ export default function InventoryPage() {
             </div>
           </form>
         </div>
+      )}
+
+      {/* Image Extractor */}
+      {showImageExtractor && (
+        <ImageExtractor
+          defaultLocation="fridge"
+          defaultCategory="vegetables"
+          onSaveComplete={() => {
+            setShowImageExtractor(false);
+            loadIngredients();
+          }}
+        />
       )}
 
       {/* Ingredients List */}
