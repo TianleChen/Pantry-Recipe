@@ -22,7 +22,7 @@ interface ClaudeMessage {
 
 export class ClaudeVisionProvider implements LLMProvider {
   private apiKey: string;
-  private model: string = 'claude-3-5-sonnet-20241022';
+  private model: string = 'claude-opus-4-1';
 
   constructor() {
     this.apiKey = process.env.ANTHROPIC_API_KEY || '';
