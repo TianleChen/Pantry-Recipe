@@ -83,7 +83,9 @@ export default function ImageExtractor({ onSaveComplete, defaultLocation = 'frid
       setIngredients(result.ingredients);
       setError('');
     } else {
-      setError(result.error || 'Failed to extract ingredients');
+      const errorMsg = result.error || 'Failed to extract ingredients from image';
+      console.error('[ImageExtractor] Extraction failed:', result);
+      setError(`❌ ${errorMsg}`);
       setIngredients([]);
     }
   }

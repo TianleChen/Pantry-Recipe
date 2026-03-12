@@ -149,11 +149,16 @@ export async function extractIngredientsFromImage(
       clearTimeout(timeoutId);
 
       if (!response.ok) {
-        const error = await response.json();
+        let error: any;
+        try {
+          error = await response.json();
+        } catch (e) {
+          error = { error: `HTTP ${response.status}: ${response.statusText}` };
+        }
         return {
           success: false,
           ingredients: [],
-          error: error.error || 'Failed to extract ingredients',
+          error: error.error || `Server error: ${response.status}`,
         };
       }
 
@@ -173,10 +178,12 @@ export async function extractIngredientsFromImage(
       throw fetchError;
     }
   } catch (error) {
+    const errorMsg = error instanceof Error ? error.message : String(error);
+    console.error('[extractIngredientsFromImage] Error:', errorMsg, error);
     return {
       success: false,
       ingredients: [],
-      error: error instanceof Error ? error.message : 'Unknown error',
+      error: `Network error: ${errorMsg}`,
     };
   }
 }
