@@ -20,8 +20,23 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'
 
 export async function POST(request: NextRequest) {
   try {
-    const formData = await request.formData();
-    const file = formData.get('image') as File;
+    let file: File | null = null;
+    let defaultLocation = 'fridge';
+    let defaultCategory = 'vegetables';
+
+    // Try to parse FormData
+    try {
+      const formData = await request.formData();
+      file = formData.get('image') as File;
+      defaultLocation = (formData.get('defaultLocation') as string) || defaultLocation;
+      defaultCategory = (formData.get('defaultCategory') as string) || defaultCategory;
+    } catch (formError) {
+      console.error(`[IMAGE_EXTRACT] FormData parse error: ${formError}`);
+      return NextResponse.json(
+        { error: 'Failed to parse upload. Please try again.' },
+        { status: 400 }
+      );
+    }
 
     if (!file) {
       return NextResponse.json(
@@ -50,10 +65,6 @@ export async function POST(request: NextRequest) {
     const buffer = await file.arrayBuffer();
     const base64 = Buffer.from(buffer).toString('base64');
 
-    // Get optional defaults from query/body
-    const defaultLocation = formData.get('defaultLocation') as string || 'fridge';
-    const defaultCategory = formData.get('defaultCategory') as string || 'vegetables';
-
     // Extract ingredients using LLM
     const llmProvider = getLLMProvider();
     console.log(`[IMAGE_EXTRACT] Processing image: ${file.name} (${file.size} bytes, ${file.type})`);
@@ -68,8 +79,8 @@ export async function POST(request: NextRequest) {
     if (!result.success) {
       console.error(`[IMAGE_EXTRACT] Failed: ${result.error}`);
       return NextResponse.json(
-        { error: result.error || 'Failed to extract ingredients from image. Check server logs.' },
-        { status: 500 }
+        { error: result.error || 'Could not analyze this image. Please try a clearer photo.' },
+        { status: 400 }
       );
     }
 

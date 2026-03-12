@@ -36,6 +36,7 @@ export class ClaudeVisionProvider implements LLMProvider {
     mimeType: string
   ): Promise<ImageExtractionResult> {
     try {
+      console.log(`[Claude Vision] Starting extraction. Image MIME: ${mimeType}, Size: ${imageBase64.length} chars`);
       const response = await fetch('https://api.anthropic.com/v1/messages', {
         method: 'POST',
         headers: {
@@ -69,8 +70,14 @@ export class ClaudeVisionProvider implements LLMProvider {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(`Claude API error: ${error.error?.message || 'Unknown error'}`);
+        let errorMsg = `HTTP ${response.status}`;
+        try {
+          const error = await response.json();
+          errorMsg = error.error?.message || error.message || errorMsg;
+        } catch (e) {
+          // Couldn't parse JSON error response
+        }
+        throw new Error(`Claude API error: ${errorMsg}`);
       }
 
       const data = await response.json();
