@@ -56,11 +56,19 @@ export async function POST(request: NextRequest) {
 
     // Extract ingredients using LLM
     const llmProvider = getLLMProvider();
+    console.log(`[IMAGE_EXTRACT] Processing image: ${file.name} (${file.size} bytes, ${file.type})`);
+    console.log(`[IMAGE_EXTRACT] Starting Claude Vision extraction...`);
+    
+    const startTime = Date.now();
     const result = await llmProvider.extractIngredients(base64, file.type);
+    const duration = Date.now() - startTime;
+    
+    console.log(`[IMAGE_EXTRACT] Completed in ${duration}ms. Success: ${result.success}`);
 
     if (!result.success) {
+      console.error(`[IMAGE_EXTRACT] Failed: ${result.error}`);
       return NextResponse.json(
-        { error: result.error || 'Failed to extract ingredients' },
+        { error: result.error || 'Failed to extract ingredients from image. Check server logs.' },
         { status: 500 }
       );
     }

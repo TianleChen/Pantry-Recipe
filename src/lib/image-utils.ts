@@ -135,22 +135,43 @@ export async function extractIngredientsFromImage(
       formData.append('defaultCategory', options.defaultCategory);
     }
 
-    // Send to API
-    const response = await fetch('/api/ingredients/from-image', {
-      method: 'POST',
-      body: formData,
-    });
+    // Send to API with timeout
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 120000); // 2 minutes
 
-    if (!response.ok) {
-      const error = await response.json();
-      return {
-        success: false,
-        ingredients: [],
-        error: error.error || 'Failed to extract ingredients',
-      };
+    try {
+      const response = await fetch('/api/ingredients/from-image', {
+        method: 'POST',
+        body: formData,
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const error = await response.json();
+        return {
+          success: false,
+          ingredients: [],
+          error: error.error || 'Failed to extract ingredients',
+        };
+      }
+
+      return await response.json();
+    } catch (fetchError) {
+      clearTimeout(timeoutId);
+      
+      // Handle abort/timeout specifically
+      if (fetchError instanceof Error && fetchError.name === 'AbortError') {
+        return {
+          success: false,
+          ingredients: [],
+          error: 'Request took too long. Please try with a smaller or simpler image.',
+        };
+      }
+      
+      throw fetchError;
     }
-
-    return await response.json();
   } catch (error) {
     return {
       success: false,
