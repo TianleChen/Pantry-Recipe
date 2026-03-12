@@ -1,0 +1,87 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Ingredient {
+  id              String   @id @default(cuid())
+  name            String
+  normalizedName  String   // for matching (lowercase)
+  category        String   // vegetables, meat, seafood, dairy, grains, condiments, snacks, frozen
+  quantity        Float
+  unit            String   // pcs, g, kg, ml, L, pack, box
+  location        String   // fridge, freezer, pantry, counter
+  expirationDate  DateTime?
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([normalizedName])
+  @@index([category])
+  @@index([location])
+  @@index([expirationDate])
+}
+
+model Recipe {
+  id              String   @id @default(cuid())
+  title           String
+  description     String?
+  prepTimeMinutes Int      @default(0)
+  cookTimeMinutes Int      @default(0)
+  totalTimeMinutes Int     @default(0)
+  steps           String   // JSON array of steps
+  tags            String?  // comma-separated
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  ingredients     RecipeIngredient[]
+  favorites       FavoriteRecipe[]
+  cookedRecords   CookedRecipe[]
+
+  @@index([title])
+}
+
+model RecipeIngredient {
+  id              String   @id @default(cuid())
+  recipeId        String
+  ingredientName  String
+  normalizedName  String   // for matching
+  quantity        Float
+  unit            String
+  isOptional      Boolean  @default(false)
+  isKeyIngredient Boolean  @default(false)
+  createdAt       DateTime @default(now())
+
+  recipe          Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+  @@index([normalizedName])
+}
+
+model FavoriteRecipe {
+  id              String   @id @default(cuid())
+  recipeId        String
+  createdAt       DateTime @default(now())
+
+  recipe          Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@unique([recipeId])
+  @@index([recipeId])
+}
+
+model CookedRecipe {
+  id              String   @id @default(cuid())
+  recipeId        String
+  cookedAt        DateTime @default(now())
+
+  recipe          Recipe   @relation(fields: [recipeId], references: [id], onDelete: Cascade)
+
+  @@index([recipeId])
+}
