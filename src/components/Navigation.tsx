@@ -25,6 +25,7 @@ export default function Navigation() {
     en: {
       dashboard: 'Dashboard',
       inventory: 'Inventory',
+      quickAdd: 'Quick Add',
       recipes: 'Recipes',
       favorites: 'Favorites',
       settings: 'Settings',
@@ -32,6 +33,7 @@ export default function Navigation() {
     zh: {
       dashboard: '仪表板',
       inventory: '库存',
+      quickAdd: '快速添加',
       recipes: '食谱',
       favorites: '收藏',
       settings: '设置',
@@ -53,6 +55,9 @@ export default function Navigation() {
             </Link>
             <Link href="/inventory" className="text-gray-700 hover:text-blue-600 font-medium">
               {labels.inventory}
+            </Link>
+            <Link href="/quick-add" className="text-gray-700 hover:text-blue-600 font-medium bg-blue-100 px-3 py-1 rounded hover:bg-blue-200 transition-colors">
+              {labels.quickAdd}
             </Link>
             <Link href="/recipes" className="text-gray-700 hover:text-blue-600 font-medium">
               {labels.recipes}
@@ -143,6 +148,13 @@ export default function Navigation() {
               onClick={() => setMobileMenuOpen(false)}
             >
               {labels.inventory}
+            </Link>
+            <Link
+              href="/quick-add"
+              className="block text-gray-700 hover:text-blue-600 font-medium py-2 bg-blue-100 px-3 rounded hover:bg-blue-200"
+              onClick={() => setMobileMenuOpen(false)}
+            >
+              {labels.quickAdd}
             </Link>
             <Link
               href="/recipes"
